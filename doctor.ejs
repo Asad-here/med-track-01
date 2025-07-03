@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Doctor Dashboard - <%= doctor.name %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0bc5ea',       // bright teal
+            dark: '#0f172a',          // rich dark-blue navy
+            surface: '#1e293b',       // slate navy
+            light: '#f1f5f9',         // pale light
+            success: '#2dd4bf',       // teal-green
+            danger: '#f87171',        // warm red
+            warning: '#facc15',       // bright yellow
+            info: '#60a5fa',          // sky blue
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .status-Scheduled {
+      background-color: rgba(96, 165, 250, 0.15);
+      color: #60a5fa;
+    }
+    .status-Confirmed {
+      background-color: rgba(45, 212, 191, 0.15);
+      color: #2dd4bf;
+    }
+    .status-Cancelled {
+      background-color: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+    }
+    .status-Completed {
+      background-color: rgba(250, 204, 21, 0.15);
+      color: #facc15;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-dark text-light flex flex-col">
+
+  <!-- Header flipped -->
+  <header class="bg-surface shadow sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <!-- User info left -->
+      <nav aria-label="User menu" class="flex items-center space-x-4">
+        <div class="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-dark font-bold text-lg shadow-md select-none">
+          <%= doctor.name.split(' ').map(n => n[0]).join('') %>
+        </div>
+        <span class="text-lg font-semibold select-none"><%= doctor.name %></span>
+        <a href="/logout" class="text-sm text-light hover:text-primary transition" role="button" aria-label="Logout">
+          Logout
+        </a>
+      </nav>
+
+      <!-- Logo right -->
+      <a href="/doctor" class="text-3xl font-extrabold text-primary hover:text-light transition">
+        MedTrack
+      </a>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Main content first (left) -->
+    <main class="flex-1 overflow-auto p-8 space-y-10">
+      
+      <!-- Patients section (swapped to top) -->
+      <section id="patients" class="space-y-6">
+        <h2 class="text-2xl font-bold text-primary border-b border-primary pb-2">Recent Patients</h2>
+        <div class="bg-surface rounded-lg shadow divide-y divide-slate-700">
+          <% patients.slice(-5).forEach(p => { %>
+          <div class="p-5 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+            <div>
+              <p class="font-semibold text-lg"><%= p.patientName %></p>
+              <p class="text-sm text-light/70">ID: <%= p.patientId %></p>
+            </div>
+            <div class="text-sm text-light/60">Date: <%= p.date %></div>
+            <div class="text-sm text-light/60 max-w-xs truncate" title="<%= p.reason %>">Reason: <%= p.reason %></div>
+          </div>
+          <% }); %>
+        </div>
+      </section>
+
+      <!-- Appointments section (swapped below) -->
+      <section id="appointments" class="space-y-6">
+        <h2 class="text-2xl font-bold text-primary border-b border-primary pb-2">Appointments</h2>
+        <div class="overflow-x-auto rounded-lg shadow bg-surface">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-800">
+              <tr>
+                <th class="p-4 font-medium">Patient</th>
+                <th class="p-4 font-medium">Date & Time</th>
+                <th class="p-4 font-medium">Status</th>
+                <th class="p-4 font-medium">Reason</th>
+                <th class="p-4 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% patients.forEach(app => { %>
+              <tr class="border-t border-slate-700 hover:bg-slate-700 transition">
+                <td class="p-4">
+                  <p class="font-semibold"><%= app.patientName %></p>
+                  <p class="text-xs text-light/60">ID: <%= app.patientId %></p>
+                </td>
+                <td class="p-4 whitespace-nowrap"><%= app.date %> · <%= app.time %></td>
+                <td class="p-4">
+                  <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold status-<%= app.status %>">
+                    <%= app.status %>
+                  </span>
+                </td>
+                <td class="p-4 max-w-xs truncate" title="<%= app.reason %>"><%= app.reason %></td>
+                <td class="p-4 space-y-3">
+                  <form method="post" action="/doctor/appointment/<%= app.id %>/precautions" class="space-y-3">
+                    <input name="precautions" placeholder="Precautions" aria-label="Precautions" class="bg-dark border border-slate-600 px-3 py-2 rounded w-full text-light placeholder-light/50 focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <div id="medications-<%= app.id %>" class="space-y-2">
+                      <div class="flex gap-2">
+                        <input name="medications[]" placeholder="Tablet Name" aria-label="Tablet Name" class="bg-dark border border-slate-600 px-3 py-2 rounded w-1/2 text-light placeholder-light/50 focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <select name="timings[]" aria-label="Timing" class="bg-dark border border-slate-600 px-3 py-2 rounded w-1/2 text-light focus:outline-none focus:ring-2 focus:ring-primary">
+                          <option value="Morning">Morning</option>
+                          <option value="Afternoon">Afternoon</option>
+                          <option value="Evening">Evening</option>
+                          <option value="Night">Night</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button type="button" onclick="addMedication('<%= app.id %>')" class="text-info text-sm font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-info rounded">
+                      + Add More
+                    </button>
+                    <button type="submit" class="w-full px-4 py-2 bg-success text-dark rounded font-semibold hover:bg-teal-400 transition focus:outline-none focus:ring-2 focus:ring-success">
+                      Send
+                    </button>
+                  </form>
+
+                  <form method="post" action="/doctor/appointment/<%= app.id %>/cancel">
+                    <button type="submit" class="w-full px-4 py-2 bg-danger text-light rounded font-semibold hover:bg-red-500 transition focus:outline-none focus:ring-2 focus:ring-danger">
+                      Cancel
+                    </button>
+                  </form>
+
+                  <form method="post" action="/doctor/appointment/<%= app.id %>/delete">
+                    <button type="submit" class="w-full px-4 py-2 bg-slate-700 text-light rounded font-semibold hover:bg-slate-600 transition focus:outline-none focus:ring-2 focus:ring-slate-600">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Stats grid moved below content -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+        <div class="bg-surface p-6 rounded-lg shadow text-center">
+          <p class="text-light/60 uppercase tracking-wide text-xs mb-1">Today’s Appointments</p>
+          <p class="text-4xl font-extrabold text-primary mb-1"><%= stats.todayCount %></p>
+          <p class="text-light/50 text-sm"><%= stats.todayConfirmed %> confirmed</p>
+        </div>
+        <div class="bg-surface p-6 rounded-lg shadow text-center">
+          <p class="text-light/60 uppercase tracking-wide text-xs mb-1">This Week</p>
+          <p class="text-4xl font-extrabold text-primary mb-1"><%= stats.weekCount %></p>
+          <p class="text-light/50 text-sm">+<%= stats.weekDiff %> vs last week</p>
+        </div>
+        <div class="bg-surface p-6 rounded-lg shadow text-center">
+          <p class="text-light/60 uppercase tracking-wide text-xs mb-1">Total Patients</p>
+          <p class="text-4xl font-extrabold text-primary mb-1"><%= stats.patientTotal %></p>
+          <p class="text-light/50 text-sm"><%= stats.patientNew %> new this week</p>
+        </div>
+        <div class="bg-surface p-6 rounded-lg shadow text-center">
+          <p class="text-light/60 uppercase tracking-wide text-xs mb-1">Prescriptions</p>
+          <p class="text-4xl font-extrabold text-primary mb-1"><%= stats.prescriptionTotal %></p>
+          <p class="text-light/50 text-sm"><%= stats.prescriptionWeekly %> this week</p>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Sidebar right -->
+    <nav id="sidebar" class="bg-surface w-64 p-6 hidden md:flex flex-col shadow-lg overflow-auto" aria-label="Sidebar Navigation">
+      <ul class="space-y-6 text-primary text-lg font-semibold">
+        <li>
+          <a href="#patients" class="flex items-center space-x-3 hover:text-light transition rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary" tabindex="0">
+            <span aria-hidden="true">👨‍👧</span><span>Patients</span>
+          </a>
+        </li>
+        <li>
+          <a href="#appointments" class="flex items-center space-x-3 hover:text-light transition rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary" tabindex="0">
+            <span aria-hidden="true">📅</span><span>Appointments</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+
+  <script>
+    function addMedication(id) {
+      const container = document.getElementById('medications-' + id);
+      const div = document.createElement('div');
+      div.className = 'flex gap-2';
+      div.innerHTML = `
+        <input name="medications[]" placeholder="Tablet Name" aria-label="Tablet Name" class="bg-dark border border-slate-600 px-3 py-2 rounded w-1/2 text-light placeholder-light/50 focus:outline-none focus:ring-2 focus:ring-primary" />
+        <select name="timings[]" aria-label="Timing" class="bg-dark border border-slate-600 px-3 py-2 rounded w-1/2 text-light focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="Morning">Morning</option>
+          <option value="Afternoon">Afternoon</option>
+          <option value="Evening">Evening</option>
+          <option value="Night">Night</option>
+        </select>`;
+      container.appendChild(div);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MedTrack - Registration</title>
+  <style>
+    :root {
+      --primary: #ff6f61;          /* Coral */
+      --secondary: #2c3e50;        /* Dark Blue-Gray */
+      --bg-start: #a8edea;         /* Light Cyan */
+      --bg-end: #fed6e3;           /* Light Pink */
+      --white: #ffffff;
+      --text-dark: #34495e;        /* Dark Slate */
+      --text-light: #ffffff;
+      --gray-light: #bdc3c7;
+      --input-bg: #f9f9f9;
+      --input-border: #ccc;
+      --input-focus: var(--primary);
+      --button-hover: #e85c50;
+      --tab-hover: #fce4e1;
+      --tab-active-bg: #ffe8e4;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      background-color: var(--secondary);
+      color: var(--text-light);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 30px;
+      flex-wrap: wrap;
+      position: relative;
+      font-weight: 600;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      letter-spacing: 1.2px;
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      height: 3px;
+      width: 28px;
+      background: var(--text-light);
+      margin: 5px 0;
+      border-radius: 2px;
+      transition: 0.3s ease;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+    }
+
+    .nav-links li a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+      padding: 6px 0;
+    }
+
+    .nav-links li a:hover {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: flex;
+      }
+
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 20px;
+      }
+
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background-color: var(--secondary);
+        padding: 10px 0;
+        position: absolute;
+        top: 55px;
+        left: 0;
+        z-index: 1000;
+        border-radius: 0 0 8px 8px;
+      }
+
+      .nav-links.show {
+        display: flex;
+      }
+
+      .nav-links li {
+        padding: 10px 30px;
+        text-align: left;
+      }
+
+      .nav-links li a {
+        padding: 0;
+      }
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto 60px;
+      padding: 0 20px;
+      flex-grow: 1;
+    }
+
+    .registration-container {
+      background-color: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(255, 111, 97, 0.2);
+      padding: 40px 50px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .registration-container:hover {
+      box-shadow: 0 15px 40px rgba(255, 111, 97, 0.3);
+    }
+
+    .form-title {
+      text-align: center;
+      color: var(--secondary);
+      font-size: 2.4rem;
+      margin-bottom: 35px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 35px;
+      border-bottom: 2px solid #f0f0f0;
+      user-select: none;
+    }
+
+    .tab {
+      padding: 14px 30px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--secondary);
+      background-color: transparent;
+      border-radius: 8px 8px 0 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      flex: 1;
+      text-align: center;
+      box-shadow: inset 0 -2px 0 transparent;
+    }
+
+    .tab:hover {
+      background-color: var(--tab-hover);
+      color: var(--primary);
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom: 4px solid var(--primary);
+      background-color: var(--tab-active-bg);
+      box-shadow: none;
+    }
+
+    .form-container {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .form-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 14px 15px;
+      border: 1.8px solid var(--input-border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: var(--input-bg);
+      color: var(--secondary);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+    }
+
+    .form-group input::placeholder {
+      color: var(--gray-light);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--input-focus);
+      box-shadow: 0 0 8px var(--input-focus);
+      background-color: #fff;
+      color: var(--secondary);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 24px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .submit-btn {
+      background-color: var(--primary);
+      color: var(--text-light);
+      border: none;
+      padding: 15px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: 700;
+      width: 100%;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      letter-spacing: 0.05em;
+      box-shadow: 0 5px 15px rgba(255, 111, 97, 0.4);
+    }
+
+    .submit-btn:hover {
+      background-color: var(--button-hover);
+      box-shadow: 0 8px 20px rgba(232, 92, 80, 0.6);
+    }
+
+    footer {
+      background-color: var(--secondary);
+      color: var(--text-light);
+      text-align: center;
+      padding: 22px 0;
+      margin-top: auto;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      font-size: 0.95rem;
+      box-shadow: inset 0 1px 4px rgba(255,255,255,0.1);
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      margin: 0 8px;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: var(--button-hover);
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .tabs {
+        flex-direction: column;
+        border-bottom: none;
+      }
+
+      .tab {
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 10px;
+        box-shadow: 0 3px 8px rgba(255, 111, 97, 0.15);
+        text-align: center;
+      }
+
+      .tab.active {
+        border-bottom: none;
+        box-shadow: 0 0 15px var(--primary);
+        background-color: var(--tab-active-bg);
+      }
+    }
+
+    .registration-container h5 {
+      text-align: center;
+      margin-bottom: 18px;
+      font-weight: 600;
+      color: var(--secondary);
+      font-size: 1.05rem;
+    }
+
+    .registration-container h5 a {
+      color: var(--primary);
+      text-decoration: none;
+      margin-left: 6px;
+      font-weight: 700;
+      transition: color 0.3s ease;
+    }
+
+    .registration-container h5 a:hover {
+      color: var(--button-hover);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="#" class="logo">HealthCare</a>
+      <div class="menu-toggle" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">About</a></li>
+        <li><a href="/contactus">Contact Us</a></li>
+        <li><a href="/login">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="registration-container">
+      <h5>Already had an account?<a href="/login">Login</a></h5>
+      <h1 class="form-title">Create Your Account</h1>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('patient', event)">Patient Registration</div>
+        <div class="tab" onclick="switchTab('doctor', event)">Doctor Registration</div>
+      </div>
+
+      <!-- Patient Registration Form -->
+      <div id="patient-form" class="form-container active">
+        <form id="patient-registration" action="/register/patient" method="post" onsubmit="return validatePatientForm()">
+          <input type="hidden" name="role" value="patient" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="p-first-name">First Name</label>
+              <input type="text" id="p-first-name" name="firstName" required placeholder="Enter your first name" />
+            </div>
+            <div class="form-group">
+              <label for="p-last-name">Last Name</label>
+              <input type="text" id="p-last-name" name="lastName" required placeholder="Enter your last name" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="p-dob">Age</label>
+            <input type="number" id="p-dob" name="dob" required placeholder="Enter your age" />
+          </div>
+
+          <div class="form-group">
+            <label for="p-gender">Gender</label>
+            <select id="p-gender" name="gender" required>
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="p-email">Email Address</label>
+            <input type="email" id="p-email" name="email" required placeholder="example@mail.com" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="p-phone">Phone Number</label>
+              <input type="tel" id="p-phone" name="phone" required placeholder="+1 234 567 890" />
+            </div>
+            <div class="form-group">
+              <label for="p-address">Address</label>
+              <input type="text" id="p-address" name="address" placeholder="Optional" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="p-password">Password</label>
+              <input type="password" id="p-password" name="password" required placeholder="Create a password" />
+            </div>
+            <div class="form-group">
+              <label for="p-confirm-password">Confirm Password</label>
+              <input type="password" id="p-confirm-password" required placeholder="Re-enter password" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><input type="checkbox" required /> I agree to the Terms and Conditions</label>
+          </div>
+
+          <button type="submit" class="submit-btn">Register as Patient</button>
+        </form>
+      </div>
+
+      <!-- Doctor Registration Form -->
+      <div id="doctor-form" class="form-container">
+        <form id="doctor-registration" action="/register/doctor" method="post" onsubmit="return validateDoctorForm()">
+          <input type="hidden" name="role" value="doctor" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="d-first-name">First Name</label>
+              <input type="text" id="d-first-name" name="firstName" required placeholder="Enter your first name" />
+            </div>
+            <div class="form-group">
+              <label for="d-last-name">Last Name</label>
+              <input type="text" id="d-last-name" name="lastName" required placeholder="Enter your last name" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="d-specialization">Specialization</label>
+            <select id="d-specialization" name="specialization" required>
+              <option value="">Select Specialization</option>
+              <option value="cardiologist">Cardiologist</option>
+              <option value="dermatologist">Dermatologist</option>
+              <option value="neurologist">Neurologist</option>
+              <option value="pediatrician">Pediatrician</option>
+              <option value="general">General Practitioner</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="d-license">Medical License Number</label>
+              <input type="text" id="d-license" name="license" required placeholder="Enter license number" />
+            </div>
+            <div class="form-group">
+              <label for="d-years">Years of Experience</label>
+              <input type="number" id="d-years" name="experience" min="0" required placeholder="0" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="d-hospital">Hospital/Clinic Name</label>
+            <input type="text" id="d-hospital" name="hospital" required placeholder="Enter hospital or clinic name" />
+          </div>
+
+          <div class="form-group">
+            <label for="d-email">Email Address</label>
+            <input type="email" id="d-email" name="email" required placeholder="example@mail.com" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="d-phone">Phone Number</label>
+              <input type="tel" id="d-phone" name="phone" required placeholder="+1 234 567 890" />
+            </div>
+            <div class="form-group">
+              <label for="d-address">Practice Address</label>
+              <input type="text" id="d-address" name="address" required placeholder="Enter practice address" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="d-password">Password</label>
+              <input type="password" id="d-password" name="password" required placeholder="Create a password" />
+            </div>
+            <div class="form-group">
+              <label for="d-confirm-password">Confirm Password</label>
+              <input type="password" id="d-confirm-password" required placeholder="Re-enter password" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><input type="checkbox" required /> I confirm that all information provided is accurate</label>
+          </div>
+
+          <button type="submit" class="submit-btn">Register as Doctor</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Contact: info@medtrack.com | Phone: (123) 456-7890</p>
+    <p>
+      <a href="#">Privacy Policy</a> | 
+      <a href="#">Terms of Service</a>
+    </p>
+  </footer>
+
+  <script>
